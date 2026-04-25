@@ -3,32 +3,43 @@ package com.example.safetone_demo.ui.dashboard
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import com.example.safetone_demo.ui.theme.SafeToneTheme
+
+enum class SafeToneState {
+    LISTENING, ALERT, CALM
+}
 
 @Composable
 fun DashboardScreen() {
-    var isAlert by remember { mutableStateOf(false) }
+    var systemState by remember { mutableStateOf(SafeToneState.LISTENING) }
     val colorScheme = MaterialTheme.colorScheme
 
+    val targetBgColor = when (systemState) {
+        SafeToneState.ALERT -> colorScheme.error
+        SafeToneState.CALM -> Color(0xFF0D47A1)
+        SafeToneState.LISTENING -> colorScheme.background
+    }
+
     val animatedBgColor by animateColorAsState(
-        targetValue = if (isAlert) colorScheme.error else colorScheme.background,
+        targetValue = targetBgColor,
         animationSpec = tween(durationMillis = 500),
-        label = "BgColorAnimation"
+        label = ""
     )
 
     Column(
@@ -41,52 +52,81 @@ fun DashboardScreen() {
     ) {
         Text(
             text = "SAFETONE",
-            color = if (isAlert) Color.White else colorScheme.primary,
+            color = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary,
             fontSize = 20.sp,
             fontWeight = FontWeight.ExtraBold,
             letterSpacing = 4.sp
         )
 
         ElevatedCard(
-            modifier = Modifier.size(300.dp),
+            modifier = Modifier.size(320.dp),
             shape = RoundedCornerShape(40.dp),
             colors = CardDefaults.elevatedCardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = if (isAlert) "🔔" else "🎧", fontSize = 80.sp)
-                Spacer(modifier = Modifier.height(20.dp))
+                val imageRes = when (systemState) {
+                    SafeToneState.ALERT -> com.example.safetone_demo.R.drawable.alarm
+                    SafeToneState.CALM -> com.example.safetone_demo.R.drawable.zzz
+                    SafeToneState.LISTENING -> com.example.safetone_demo.R.drawable.microphone
+                }
+
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(100.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val statusText = when (systemState) {
+                    SafeToneState.ALERT -> "SOUND DETECTED!"
+                    SafeToneState.CALM -> "ENVIRONMENT IS QUIET"
+                    SafeToneState.LISTENING -> "LISTENING..."
+                }
+
                 Text(
-                    text = if (isAlert) "ALARMĂ" else "LINIȘTE",
-                    style = MaterialTheme.typography.headlineMedium,
+                    text = statusText,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
                     color = colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 SoundWaveform(
-                    modifier = Modifier.fillMaxWidth(0.7f).height(50.dp),
-                    color = if (isAlert) colorScheme.error else colorScheme.primary,
-                    isAnimating = !isAlert
+                    modifier = Modifier.fillMaxWidth(0.8f).height(60.dp),
+                    color = when(systemState) {
+                        SafeToneState.ALERT -> colorScheme.error
+                        SafeToneState.CALM -> Color.Gray.copy(alpha = 0.5f)
+                        SafeToneState.LISTENING -> colorScheme.primary
+                    },
+                    isAnimating = (systemState == SafeToneState.LISTENING)
                 )
             }
         }
 
         Button(
-            onClick = { isAlert = !isAlert },
+            onClick = {
+                systemState = when (systemState) {
+                    SafeToneState.LISTENING -> SafeToneState.ALERT
+                    SafeToneState.ALERT -> SafeToneState.CALM
+                    SafeToneState.CALM -> SafeToneState.LISTENING
+                }
+            },
             modifier = Modifier.fillMaxWidth().height(64.dp),
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isAlert) Color.White else colorScheme.primary
+                containerColor = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary
             )
         ) {
             Text(
-                text = if (isAlert) "RESETEAZĂ" else "TESTEAZĂ SISTEMUL",
-                color = if (isAlert) Color.Red else Color.White,
+                text = "SWITCH STATE",
+                color = if (systemState == SafeToneState.ALERT) Color.Red else Color.White,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -95,30 +135,25 @@ fun DashboardScreen() {
 
 @Composable
 fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "WaveformTransition")
-
+    val infiniteTransition = rememberInfiniteTransition(label = "")
     val animations = (0 until 8).map { index ->
         infiniteTransition.animateFloat(
             initialValue = 0.2f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 animation = keyframes {
-                    // Am mărit durata totală la 1500ms pentru o mișcare mai relaxată
                     durationMillis = 1500
-
-                    // Ajustăm punctele de control pentru fluiditate
-                    0.2f at index * 100 // Început
-                    1f at index * 100 + 400 // Vârful valului
-                    0.2f at index * 100 + 800 // Revenire
+                    0.2f at index * 100
+                    1f at index * 100 + 400
+                    0.2f at index * 100 + 800
                 },
                 repeatMode = RepeatMode.Restart
             ),
-            label = "BarAnimation$index"
+            label = ""
         )
     }
 
     Canvas(modifier = modifier) {
-        // ... restul codului de desenare (Canvas) rămâne la fel
         val width = size.width
         val height = size.height
         val barWidth = 10.dp.toPx()
@@ -138,7 +173,6 @@ fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean) {
         }
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
