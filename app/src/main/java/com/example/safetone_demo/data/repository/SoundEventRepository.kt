@@ -36,6 +36,10 @@ class SoundEventRepository(
     }
 
     suspend fun acknowledgeEvent(eventId: Int) {
+        // 1. Clear it from the database (so it vanishes from the phone UI)
         eventDao.markAsAcknowledged(eventId)
+
+        // 2. Shoot the cancel signal to the watch!
+        watchNotifier.sendAlertToWatch("CANCEL_ALERT")
     }
 }
