@@ -25,4 +25,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SafeTone_demo"
 include(":app")
- 
+include(":safetone_watch")
