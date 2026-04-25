@@ -15,6 +15,15 @@ class AlertReceiverService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
 
+        val messageString = String(messageEvent.data)
+
+        if (messageEvent.path == "/safetone_lang") {
+            Log.d("SafeToneWatch", "Schimbare limbă primită: $messageString")
+            val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags(messageString)
+            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+            return // Ne oprim aici, nu deschidem UI-ul
+        }
+
         if (messageEvent.path == "/safetone_alert") {
 
             val messageString = String(messageEvent.data)

@@ -33,5 +33,20 @@ class WatchNotifier(context: Context) {
             Log.e("WatchNotifier", "Failed to send alert to watch", e)
         }
     }
+
+    suspend fun sendLanguageUpdate(languageTag: String) {
+        try {
+            val connectedNodes = nodeClient.connectedNodes.await()
+            for (node in connectedNodes) {
+                messageClient.sendMessage(
+                    node.id,
+                    "/safetone_lang",
+                    languageTag.toByteArray()
+                ).await()
+            }
+        } catch (e: Exception) {
+            Log.e("WatchNotifier", "Failed to send language to watch", e)
+        }
+    }
 }
 
