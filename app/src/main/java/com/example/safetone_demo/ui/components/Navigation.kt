@@ -8,7 +8,8 @@ import com.example.safetone_demo.ui.dashboard.DashboardScreen
 import com.example.safetone_demo.ui.dashboard.DashboardViewModel
 import com.example.safetone_demo.ui.eventlog.EventLogScreen
 import com.example.safetone_demo.ui.settings.SettingsScreen
-import com.example.safetone_demo.data.local.entity.AudioEventEntity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
 fun SafeToneNavGraph(
@@ -30,16 +31,11 @@ fun SafeToneNavGraph(
             )
         }
         composable("event_log") {
-            val dummyEvents = listOf(
-                AudioEventEntity(1, "Fire Alarm", System.currentTimeMillis(), 0.98f),
-                AudioEventEntity(2, "Doorbell", System.currentTimeMillis() - 3600000, 0.85f),
-                AudioEventEntity(3, "Baby Crying", System.currentTimeMillis() - 7200000, 0.92f),
-                AudioEventEntity(4, "Dog Barking", System.currentTimeMillis() - 10800000, 0.75f),
-                AudioEventEntity(5, "Unknown Sound", System.currentTimeMillis() - 14400000, 0.60f)
-            )
+            // 1. Grab the REAL database history from the ViewModel
+            val realEvents by dashboardViewModel.allEvents.collectAsState()
 
             EventLogScreen(
-                events = dummyEvents,
+                events = realEvents, // 2. Pass the real data into the screen!
                 onNavigateToDashboard = {
                     navController.navigate("dashboard") {
                         popUpTo("dashboard") { inclusive = true }

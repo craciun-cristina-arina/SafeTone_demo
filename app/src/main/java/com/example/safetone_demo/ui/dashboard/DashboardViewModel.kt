@@ -31,6 +31,13 @@ class DashboardViewModel(
             initialValue = null
         )
 
+    val allEvents: StateFlow<List<AudioEventEntity>> = repository.getEventHistory()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     fun dismissAlert(eventId: Int) {
         viewModelScope.launch {
             repository.acknowledgeEvent(eventId)
