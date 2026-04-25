@@ -16,30 +16,22 @@ class SafeToneApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        watchNotifier = WatchNotifier(this)
-
-        // 2. Update the Repository to accept the notifier
-        repository = SoundEventRepository(
-            eventDao = database.audioEventDao(),
-            mqttDataSource = myFakeDataSource,
-            watchNotifier = watchNotifier // WE ARE ADDING THIS HERE!
-        )
-
         database = Room.databaseBuilder(
             this,
             SoundDatabase::class.java,
             "sound_sentinel_db"
         ).build()
 
-        // THIS IS WHERE YOU PUT THE FAKE REQUEST!
-        // 1. Create the fake source
+        // 2. Create the Fake Data Source
         val myFakeDataSource = FakeMqttDataSource()
 
-        // 2. Hand it to the repository. The repository doesn't know it's fake!
+        // 3. Create the Watch Notifier
+        watchNotifier = WatchNotifier(this)
+
         repository = SoundEventRepository(
             eventDao = database.audioEventDao(),
-            mqttDataSource = myFakeDataSource
+            mqttDataSource = myFakeDataSource,
+            watchNotifier = watchNotifier
         )
     }
 }
