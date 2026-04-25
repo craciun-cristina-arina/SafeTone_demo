@@ -20,15 +20,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.example.safetone_demo.ui.theme.SafeToneTheme
-
+import com.example.safetone_demo.ui.components.SafeToneHeader
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.NavigationDrawerItem
+import kotlinx.coroutines.launch
 enum class SafeToneState {
     LISTENING, ALERT, CALM
 }
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(onNavigateToEvents: () -> Unit) {
     var systemState by remember { mutableStateOf(SafeToneState.LISTENING) }
     val colorScheme = MaterialTheme.colorScheme
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     val targetBgColor = when (systemState) {
         SafeToneState.ALERT -> colorScheme.error
@@ -42,93 +51,130 @@ fun DashboardScreen() {
         label = ""
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(animatedBgColor)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "SAFETONE",
-            color = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 4.sp
-        )
-
-        ElevatedCard(
-            modifier = Modifier.size(320.dp),
-            shape = RoundedCornerShape(40.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = colorScheme.surface),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val imageRes = when (systemState) {
-                    SafeToneState.ALERT -> com.example.safetone_demo.R.drawable.alarm
-                    SafeToneState.CALM -> com.example.safetone_demo.R.drawable.zzz
-                    SafeToneState.LISTENING -> com.example.safetone_demo.R.drawable.microphone
-                }
-
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp)
-                )
-
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
-
-                val statusText = when (systemState) {
-                    SafeToneState.ALERT -> "SOUND DETECTED!"
-                    SafeToneState.CALM -> "ENVIRONMENT IS QUIET"
-                    SafeToneState.LISTENING -> "LISTENING..."
-                }
-
                 Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
-                    color = colorScheme.onSurface
+                    "SAFETONE MENU",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.primary
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                SoundWaveform(
-                    modifier = Modifier.fillMaxWidth(0.8f).height(60.dp),
-                    color = when(systemState) {
-                        SafeToneState.ALERT -> colorScheme.error
-                        SafeToneState.CALM -> Color.Gray.copy(alpha = 0.5f)
-                        SafeToneState.LISTENING -> colorScheme.primary
+                NavigationDrawerItem(
+                    label = { Text("Dashboard") },
+                    selected = true,
+                    onClick = {
+                        scope.launch { drawerState.close() }
                     },
-                    isAnimating = (systemState == SafeToneState.LISTENING)
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    label = { Text("Event Logs") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToEvents()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
         }
-
-        Button(
-            onClick = {
-                systemState = when (systemState) {
-                    SafeToneState.LISTENING -> SafeToneState.ALERT
-                    SafeToneState.ALERT -> SafeToneState.CALM
-                    SafeToneState.CALM -> SafeToneState.LISTENING
-                }
+    ) {
+        Scaffold(
+            topBar = {
+                SafeToneHeader(
+                    onMenuClick = { },
+                    onGoogleLoginClick = { }
+                )
             },
-            modifier = Modifier.fillMaxWidth().height(64.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary
-            )
-        ) {
-            Text(
-                text = "SWITCH STATE",
-                color = if (systemState == SafeToneState.ALERT) Color.Red else Color.White,
-                fontWeight = FontWeight.Bold
-            )
+            containerColor = Color.Transparent
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(animatedBgColor)
+                    .padding(paddingValues)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+
+
+                ElevatedCard(
+                    modifier = Modifier.size(320.dp),
+                    shape = RoundedCornerShape(40.dp),
+                    colors = CardDefaults.elevatedCardColors(containerColor = colorScheme.surface),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val imageRes = when (systemState) {
+                            SafeToneState.ALERT -> com.example.safetone_demo.R.drawable.alarm
+                            SafeToneState.CALM -> com.example.safetone_demo.R.drawable.zzz
+                            SafeToneState.LISTENING -> com.example.safetone_demo.R.drawable.microphone
+                        }
+
+                        Image(
+                            painter = painterResource(id = imageRes),
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val statusText = when (systemState) {
+                            SafeToneState.ALERT -> "SOUND DETECTED!"
+                            SafeToneState.CALM -> "ENVIRONMENT IS QUIET"
+                            SafeToneState.LISTENING -> "LISTENING..."
+                        }
+
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Black,
+                            color = colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        SoundWaveform(
+                            modifier = Modifier.fillMaxWidth(0.8f).height(60.dp),
+                            color = when (systemState) {
+                                SafeToneState.ALERT -> colorScheme.error
+                                SafeToneState.CALM -> Color.Gray.copy(alpha = 0.5f)
+                                SafeToneState.LISTENING -> colorScheme.primary
+                            },
+                            isAnimating = (systemState == SafeToneState.LISTENING)
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        systemState = when (systemState) {
+                            SafeToneState.LISTENING -> SafeToneState.ALERT
+                            SafeToneState.ALERT -> SafeToneState.CALM
+                            SafeToneState.CALM -> SafeToneState.LISTENING
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(64.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "SWITCH STATE",
+                        color = if (systemState == SafeToneState.ALERT) Color.Red else Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -178,6 +224,6 @@ fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean) {
 @Composable
 fun DashboardPreview() {
     SafeToneTheme {
-        DashboardScreen()
+        DashboardScreen(onNavigateToEvents = { })
     }
 }

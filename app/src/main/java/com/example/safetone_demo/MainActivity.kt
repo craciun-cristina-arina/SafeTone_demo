@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import com.example.safetone_demo.ui.dashboard.DashboardScreen
 import com.example.safetone_demo.ui.theme.SafeToneTheme
 import com.example.safetone_demo.service.AlertListenerService
-
+import com.example.safetone_demo.ui.components.SafeToneNavGraph
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SafeToneTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    DashboardScreen()
+                    SafeToneNavGraph()
                 }
             }
         }
