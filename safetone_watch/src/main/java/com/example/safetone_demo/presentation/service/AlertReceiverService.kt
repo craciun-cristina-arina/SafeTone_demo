@@ -1,4 +1,4 @@
-package com.example.safetone_demo.presentation.services
+package com.example.safetone_demo.presentation.service
 
 import android.content.Intent
 import android.os.Build
