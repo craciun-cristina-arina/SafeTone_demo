@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.safetone_demo.ui.dashboard.DashboardScreen
+import com.example.safetone_demo.ui.dashboard.DashboardViewModel
 import com.example.safetone_demo.ui.eventlog.EventLogScreen
 import com.example.safetone_demo.ui.settings.SettingsScreen
 import com.example.safetone_demo.data.local.entity.AudioEventEntity
@@ -12,7 +13,8 @@ import com.example.safetone_demo.data.local.entity.AudioEventEntity
 @Composable
 fun SafeToneNavGraph(
     isDarkTheme: Boolean,
-    onThemeChange: (Boolean) -> Unit
+    onThemeChange: (Boolean) -> Unit,
+    dashboardViewModel: DashboardViewModel
 ) {
     val navController = rememberNavController()
 
@@ -22,6 +24,7 @@ fun SafeToneNavGraph(
     ) {
         composable("dashboard") {
             DashboardScreen(
+                viewModel = dashboardViewModel,
                 onNavigateToEvents = { navController.navigate("event_log") },
                 onNavigateToSettings = { navController.navigate("settings") }
             )

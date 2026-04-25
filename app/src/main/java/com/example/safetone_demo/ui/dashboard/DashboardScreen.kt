@@ -33,10 +33,22 @@ sealed class SafeToneState {
 }
 
 @Composable
-fun DashboardScreen(onNavigateToEvents: () -> Unit, onNavigateToSettings: () -> Unit) {
-    var systemState by remember { mutableStateOf<SafeToneState>(SafeToneState.LISTENING) }
-    val colorScheme = MaterialTheme.colorScheme
+fun DashboardScreen(
+    viewModel: DashboardViewModel,
+    onNavigateToEvents: () -> Unit,
+    onNavigateToSettings: () -> Unit
+) {
+    // 1. Observe the REAL state from the ViewModel
+    val latestEvent by viewModel.latestEvent.collectAsState()
 
+    // 2. Map the real database event to your UI state
+    val systemState = if (latestEvent != null) {
+        SafeToneState.ALERT(latestEvent!!.soundType)
+    } else {
+        SafeToneState.LISTENING
+    }
+
+    val colorScheme = MaterialTheme.colorScheme
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -198,29 +210,26 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit, onNavigateToSettings: () -> 
 
                 Button(
                     onClick = {
-                        systemState = when (systemState) {
-                            SafeToneState.LISTENING -> SafeToneState.ALERT("FIRE ALARM")
-                            is SafeToneState.ALERT -> {
-                                val currentSound = (systemState as SafeToneState.ALERT).soundType
-                                if (currentSound == "FIRE ALARM") {
-                                    SafeToneState.ALERT("DOG BARKING")
-                                } else if (currentSound == "DOG BARKING") {
-                                    SafeToneState.ALERT("UNKNOWN SOUND")
-                                } else {
-                                    SafeToneState.CALM
-                                }
+                        if (systemState is SafeToneState.ALERT) {
+                            // If an alert is active, DISMISS IT
+                            latestEvent?.let { event ->
+                                viewModel.dismissAlert(event.id)
                             }
-                            SafeToneState.CALM -> SafeToneState.LISTENING
+                        } else {
+                            // If the system is calm, SIMULATE AN ALERT
+                            viewModel.triggerNextDemoAlert()
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(20.dp),
+                    enabled = true, // ALWAYS ENABLED!
                     colors = ButtonDefaults.buttonColors(
+                        // White when active, Blue/Primary when Calm
                         containerColor = if (systemState is SafeToneState.ALERT) Color.White else colorScheme.primary
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.dashboard_switch),
+                        text = if (systemState is SafeToneState.ALERT) "DISMISS ALERT" else "SIMULATE DEMO ALERT",
                         color = if (systemState is SafeToneState.ALERT) Color.Red else Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -271,10 +280,3 @@ fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean, static
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun DashboardPreview() {
-    SafeToneTheme {
-        DashboardScreen(onNavigateToEvents = { }, onNavigateToSettings = { })
-    }
-}

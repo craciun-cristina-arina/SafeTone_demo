@@ -15,32 +15,36 @@ class AlertReceiverService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
 
-        // Check if the message is coming from our specific SafeTone path
         if (messageEvent.path == "/safetone_alert") {
 
             val messageString = String(messageEvent.data)
 
             if (messageString == "CANCEL_ALERT") {
-                // The phone is telling us the user already dismissed it on the phone screen
-                val intent = Intent("CLOSE_WATCH_UI")
+                Log.d("SafeToneWatch", "Cancel received from phone! Closing UI...")
+
+                // Add the specific package name so the security flag lets it through!
+                val intent = Intent("CLOSE_WATCH_UI").apply {
+                    setPackage(packageName)
+                }
                 sendBroadcast(intent)
+
             } else {
                 Log.d("SafeToneWatch", "Alert Received: $messageString")
 
-                // 1. It's a real alert! Vibrate...
+                // 1. Vibrate safely across all Android versions
                 triggerAlertVibration()
 
-                // 2. ...AND immediately launch the MainActivity to the screen!
-                val intent = Intent(this, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
+                // 2. Launch UI and pack the data! (Rewritten to fix putExtra)
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                intent.putExtra("ALERT_TYPE", messageString)
+
                 startActivity(intent)
             }
         }
     }
 
     private fun triggerAlertVibration() {
-        // Get the vibration hardware
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vibratorManager.defaultVibrator
@@ -49,11 +53,15 @@ class AlertReceiverService : WearableListenerService() {
             getSystemService(VIBRATOR_SERVICE) as Vibrator
         }
 
-        // Define a sharp, pulsing pattern: [Wait, Vibrate, Wait, Vibrate, Wait, Vibrate]
         val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
 
-        // Trigger it! (Removed the old API check to fix the yellow warning)
-        val effect = VibrationEffect.createWaveform(pattern, -1)
-        vibrator.vibrate(effect)
+        // THE FIX: We must check for API 26 (Android O) to support your API 25 minimum!
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val effect = VibrationEffect.createWaveform(pattern, -1)
+            vibrator.vibrate(effect)
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(pattern, -1) // Uses the old vibration method for older watches
+        }
     }
 }

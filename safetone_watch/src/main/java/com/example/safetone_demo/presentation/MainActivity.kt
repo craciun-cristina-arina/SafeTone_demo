@@ -4,24 +4,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.wear.compose.material.Text
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
@@ -36,17 +29,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Use a manual flag (2) for RECEIVER_EXPORTED to satisfy older APIs
-        val exportFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            RECEIVER_EXPORTED
-        } else {
-            0
-        }
+        ContextCompat.registerReceiver(
+            this,
+            closeReceiver,
+            IntentFilter("CLOSE_WATCH_UI"),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
-        registerReceiver(closeReceiver, IntentFilter("CLOSE_WATCH_UI"), exportFlag)
+        val incomingSoundType = intent.getStringExtra("ALERT_TYPE") ?: "ALERT"
 
         setContent {
-            SafeToneWatchUI()
+            WatchAlertScreen(soundType = incomingSoundType)
         }
     }
 
@@ -85,18 +78,5 @@ class MainActivity : ComponentActivity() {
                 Log.e("SafeToneWatch", "ACK Failed", e)
             }
         }
-    }
-}
-
-@Composable
-fun SafeToneWatchUI() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("🚨 ALERT ACTIVE")
-        Text("Press physical button")
-        Text("to silence")
     }
 }

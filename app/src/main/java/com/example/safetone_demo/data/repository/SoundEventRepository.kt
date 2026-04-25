@@ -42,4 +42,19 @@ class SoundEventRepository(
         // 2. Shoot the cancel signal to the watch!
         watchNotifier.sendAlertToWatch("CANCEL_ALERT")
     }
+
+    // 3. Manual Demo Trigger
+    suspend fun triggerManualAlert(soundType: String) {
+        // Create the fake event
+        val newEvent = AudioEventEntity(
+            soundType = soundType,
+            timestamp = System.currentTimeMillis(),
+            confidenceScore = 0.99f
+        )
+        // Save to Database
+        eventDao.insertEvent(newEvent)
+
+        // Ping the Watch!
+        watchNotifier.sendAlertToWatch(soundType)
+    }
 }
