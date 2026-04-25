@@ -85,7 +85,7 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
         Scaffold(
             topBar = {
                 SafeToneHeader(
-                    onMenuClick = { },
+                    onMenuClick = { scope.launch { drawerState.open() }},
                     onGoogleLoginClick = { }
                 )
             },

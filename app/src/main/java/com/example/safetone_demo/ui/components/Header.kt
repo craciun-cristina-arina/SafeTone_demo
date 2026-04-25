@@ -1,5 +1,6 @@
 package com.example.safetone_demo.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -39,10 +40,14 @@ fun SafeToneHeader(
             )
         },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
+            IconButton(onClick = {
+                println("CLICK DETECTAT PE BUTON") // Verifică în Logcat (bara de jos din Android Studio)
+                onMenuClick()
+            }) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = null
+                    contentDescription = "Open menu",
+                    tint = contentColor
                 )
             }
         },
@@ -53,7 +58,7 @@ fun SafeToneHeader(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.google),
-                    contentDescription = null,
+                    contentDescription = "Login",
                     tint = Color.Unspecified
                 )
             }
