@@ -103,10 +103,28 @@ fun EventLogScreen(
 
 @Composable
 fun EventCard(event: AudioEventEntity, colorScheme: ColorScheme) {
-    val isCritical = event.soundType == "Fire Alarm" || event.soundType == "Baby Crying"
-    val cardColor = if (isCritical) colorScheme.errorContainer else colorScheme.surfaceVariant
-    val textColor = if (isCritical) colorScheme.onErrorContainer else colorScheme.onSurfaceVariant
-    val indicatorColor = if (isCritical) colorScheme.error else colorScheme.primary
+    val soundTypeUpper = event.soundType.uppercase()
+
+    val indicatorColor = when (soundTypeUpper) {
+        "FIRE ALARM", "BABY CRYING" -> colorScheme.error
+        "DOORBELL", "DOG BARKING" -> colorScheme.primary
+        "UNKNOWN SOUND" -> colorScheme.tertiary
+        else -> colorScheme.outline
+    }
+
+    val cardColor = when (soundTypeUpper) {
+        "FIRE ALARM", "BABY CRYING" -> colorScheme.tertiaryContainer
+        "DOORBELL", "DOG BARKING" -> colorScheme.surfaceVariant
+        "UNKNOWN SOUND" -> colorScheme.errorContainer
+        else -> colorScheme.surface
+    }
+
+    val textColor = when (soundTypeUpper) {
+        "FIRE ALARM", "BABY CRYING" -> colorScheme.onTertiaryContainer
+        "DOORBELL", "DOG BARKING" -> colorScheme.onSurfaceVariant
+        "UNKNOWN SOUND" -> colorScheme.onErrorContainer
+        else -> colorScheme.onSurface
+    }
 
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
     val timeString = sdf.format(Date(event.timestamp))
@@ -154,7 +172,8 @@ fun EventLogPreview() {
         AudioEventEntity(1, "Fire Alarm", System.currentTimeMillis(), 0.98f),
         AudioEventEntity(2, "Doorbell", System.currentTimeMillis() - 3600000, 0.85f),
         AudioEventEntity(3, "Baby Crying", System.currentTimeMillis() - 7200000, 0.92f),
-        AudioEventEntity(4, "Dog Barking", System.currentTimeMillis() - 10800000, 0.75f)
+        AudioEventEntity(4, "Dog Barking", System.currentTimeMillis() - 10800000, 0.75f),
+        AudioEventEntity(5, "Unknown Sound", System.currentTimeMillis() - 14400000, 0.60f)
     )
 
     SafeToneTheme {

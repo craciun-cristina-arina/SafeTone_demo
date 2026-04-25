@@ -13,8 +13,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.safetone_demo"
-        minSdk = 30
-        targetSdk = 36
+        minSdk = 25
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 

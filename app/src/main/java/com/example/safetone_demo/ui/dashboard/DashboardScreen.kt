@@ -19,28 +19,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.text.style.TextAlign
 import com.example.safetone_demo.ui.theme.SafeToneTheme
 import com.example.safetone_demo.ui.components.SafeToneHeader
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.NavigationDrawerItem
 import kotlinx.coroutines.launch
-enum class SafeToneState {
-    LISTENING, ALERT, CALM
+
+sealed class SafeToneState {
+    object LISTENING : SafeToneState()
+    data class ALERT(val soundType: String) : SafeToneState()
+    object CALM : SafeToneState()
 }
 
 @Composable
 fun DashboardScreen(onNavigateToEvents: () -> Unit) {
-    var systemState by remember { mutableStateOf(SafeToneState.LISTENING) }
+    var systemState by remember { mutableStateOf<SafeToneState>(SafeToneState.LISTENING) }
     val colorScheme = MaterialTheme.colorScheme
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     val targetBgColor = when (systemState) {
-        SafeToneState.ALERT -> colorScheme.error
+        is SafeToneState.ALERT -> {
+            when ((systemState as SafeToneState.ALERT).soundType.uppercase()) {
+                "FIRE ALARM", "BABY CRYING" -> Color(0xFFEF5350)
+                "DOORBELL", "DOG BARKING" -> Color(0xFF42A5F5)
+                else -> Color(0xFFFFA726)
+            }
+        }
         SafeToneState.CALM -> Color(0xFF0D47A1)
         SafeToneState.LISTENING -> colorScheme.background
     }
@@ -101,7 +106,6 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
 
-
                 ElevatedCard(
                     modifier = Modifier.size(320.dp),
                     shape = RoundedCornerShape(40.dp),
@@ -114,11 +118,15 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         val imageRes = when (systemState) {
-                            SafeToneState.ALERT -> com.example.safetone_demo.R.drawable.alarm
+                            is SafeToneState.ALERT -> {
+                                when ((systemState as SafeToneState.ALERT).soundType.uppercase()) {
+                                    "FIRE ALARM", "BABY CRYING", "DOORBELL", "DOG BARKING" -> com.example.safetone_demo.R.drawable.alarm
+                                    else -> com.example.safetone_demo.R.drawable.question_mark
+                                }
+                            }
                             SafeToneState.CALM -> com.example.safetone_demo.R.drawable.zzz
                             SafeToneState.LISTENING -> com.example.safetone_demo.R.drawable.microphone
                         }
-
                         Image(
                             painter = painterResource(id = imageRes),
                             contentDescription = null,
@@ -128,7 +136,7 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         val statusText = when (systemState) {
-                            SafeToneState.ALERT -> "SOUND DETECTED!"
+                            is SafeToneState.ALERT -> (systemState as SafeToneState.ALERT).soundType.uppercase()
                             SafeToneState.CALM -> "ENVIRONMENT IS QUIET"
                             SafeToneState.LISTENING -> "LISTENING..."
                         }
@@ -137,7 +145,8 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                             text = statusText,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
-                            color = colorScheme.onSurface
+                            color = colorScheme.onSurface,
+                            textAlign = TextAlign.Center
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -145,11 +154,23 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                         SoundWaveform(
                             modifier = Modifier.fillMaxWidth(0.8f).height(60.dp),
                             color = when (systemState) {
-                                SafeToneState.ALERT -> colorScheme.error
+                                is SafeToneState.ALERT -> {
+                                    when ((systemState as SafeToneState.ALERT).soundType.uppercase()) {
+                                        "FIRE ALARM", "BABY CRYING" -> Color(0xFFEF5350)
+                                        "DOORBELL", "DOG BARKING" -> Color(0xFF42A5F5)
+                                        else -> MaterialTheme.colorScheme.tertiary
+                                    }
+                                }
                                 SafeToneState.CALM -> Color.Gray.copy(alpha = 0.5f)
                                 SafeToneState.LISTENING -> colorScheme.primary
                             },
-                            isAnimating = (systemState == SafeToneState.LISTENING)
+                            isAnimating = (systemState == SafeToneState.LISTENING),
+                            staticHeightFraction = when (systemState) {
+                                is SafeToneState.ALERT -> {
+                                    if ((systemState as SafeToneState.ALERT).soundType.uppercase() == "FIRE ALARM") 1f else 0.6f
+                                }
+                                else -> 0.3f
+                            }
                         )
                     }
                 }
@@ -157,20 +178,29 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                 Button(
                     onClick = {
                         systemState = when (systemState) {
-                            SafeToneState.LISTENING -> SafeToneState.ALERT
-                            SafeToneState.ALERT -> SafeToneState.CALM
+                            SafeToneState.LISTENING -> SafeToneState.ALERT("FIRE ALARM")
+                            is SafeToneState.ALERT -> {
+                                val currentSound = (systemState as SafeToneState.ALERT).soundType
+                                if (currentSound == "FIRE ALARM") {
+                                    SafeToneState.ALERT("DOG BARKING")
+                                } else if (currentSound == "DOG BARKING") {
+                                    SafeToneState.ALERT("UNKNOWN SOUND")
+                                } else {
+                                    SafeToneState.CALM
+                                }
+                            }
                             SafeToneState.CALM -> SafeToneState.LISTENING
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (systemState == SafeToneState.ALERT) Color.White else colorScheme.primary
+                        containerColor = if (systemState is SafeToneState.ALERT) Color.White else colorScheme.primary
                     )
                 ) {
                     Text(
                         text = "SWITCH STATE",
-                        color = if (systemState == SafeToneState.ALERT) Color.Red else Color.White,
+                        color = if (systemState is SafeToneState.ALERT) Color.Red else Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -180,7 +210,7 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
 }
 
 @Composable
-fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean) {
+fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean, staticHeightFraction: Float) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val animations = (0 until 8).map { index ->
         infiniteTransition.animateFloat(
@@ -208,7 +238,7 @@ fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean) {
         var startX = (width - totalBarWidth) / 2
 
         for (i in 0 until 8) {
-            val h = if (isAnimating) animations[i].value * height else height * 0.3f
+            val h = if (isAnimating) animations[i].value * height else height * staticHeightFraction
             drawRoundRect(
                 color = color,
                 topLeft = Offset(startX, (height - h) / 2),
