@@ -3,10 +3,12 @@ import kotlinx.coroutines.flow.Flow
 import com.example.safetone_demo.data.local.dao.AudioEventDao
 import com.example.safetone_demo.data.local.entity.AudioEventEntity
 import com.example.safetone_demo.data.remote.MqttDataSource
+import com.example.safetone_demo.wearable.WatchNotifier
 
 class SoundEventRepository(
     private val eventDao: AudioEventDao,
-    private val mqttDataSource: MqttDataSource
+    private val mqttDataSource: MqttDataSource,
+    private val watchNotifier: WatchNotifier
 ) {
 
     // 1. Expose the local database to the UI
@@ -29,6 +31,7 @@ class SoundEventRepository(
 
             // NOTE: This is also exactly where you would trigger
             // the ping to the Pixel Watch!
+            watchNotifier.sendAlertToWatch(payload.soundType)
         }
     }
 

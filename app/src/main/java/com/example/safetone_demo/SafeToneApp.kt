@@ -5,14 +5,26 @@ import androidx.room.Room
 import com.example.safetone_demo.data.local.SoundDatabase
 import com.example.safetone_demo.data.remote.FakeMqttDataSource
 import com.example.safetone_demo.data.repository.SoundEventRepository
+import com.example.safetone_demo.wearable.WatchNotifier
 
 class SafeToneApp : Application() {
 
     lateinit var database: SoundDatabase private set
     lateinit var repository: SoundEventRepository private set
 
+    lateinit var watchNotifier: WatchNotifier private set
+
     override fun onCreate() {
         super.onCreate()
+
+        watchNotifier = WatchNotifier(this)
+
+        // 2. Update the Repository to accept the notifier
+        repository = SoundEventRepository(
+            eventDao = database.audioEventDao(),
+            mqttDataSource = myFakeDataSource,
+            watchNotifier = watchNotifier // WE ARE ADDING THIS HERE!
+        )
 
         database = Room.databaseBuilder(
             this,
