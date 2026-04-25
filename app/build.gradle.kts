@@ -14,8 +14,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.safetone_demo"
-        minSdk = 24
-        targetSdk = 36
+        minSdk = 25
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -65,4 +65,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.wear.compose:compose-material:1.3.0")
+    implementation("androidx.wear.compose:compose-foundation:1.3.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 }
