@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">SafeTone_demo</string>
+    <string name="menu_title">SAFETONE MENU</string>
+    <string name="nav_dashboard">DASHBOARD</string>
+    <string name="nav_events">EVENT LOGS</string>
+    <string name="nav_settings">SETTINGS</string>
+
+    <string name="dashboard_listening">LISTENING...</string>
+    <string name="dashboard_alert">SOUND DETECTED!</string>
+    <string name="dashboard_calm">ENVIRONMENT IS QUIET</string>
+    <string name="dashboard_switch">SWITCH STATE</string>
+
+    <string name="events_title">EVENT LOG</string>
+    <string name="events_detected_at">Detected at</string>
+    <string name="events_confidence">Confidence</string>
+
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_theme">App Theme</string>
+    <string name="settings_language">Language</string>
+
+    <string name="watch_instruction">Press physical button to silence</string>
+    <string name="watch_dismiss">Press button to dismiss</string>
+
+    <string name="sound_fire_alarm">Fire Alarm</string>
+    <string name="sound_doorbell">Doorbell</string>
+    <string name="sound_baby_crying">Baby Crying</string>
+    <string name="sound_dog_barking">Dog Barking</string>
+    <string name="sound_unknown">Unknown Sound</string>
 </resources>

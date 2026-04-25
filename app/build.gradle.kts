@@ -68,4 +68,5 @@ dependencies {
     implementation("androidx.wear.compose:compose-material:1.3.0")
     implementation("androidx.wear.compose:compose-foundation:1.3.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
 }

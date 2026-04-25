@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.style.TextAlign
+import com.example.safetone_demo.R
 import com.example.safetone_demo.ui.theme.SafeToneTheme
 import com.example.safetone_demo.ui.components.SafeToneHeader
 import kotlinx.coroutines.launch
@@ -31,7 +33,7 @@ sealed class SafeToneState {
 }
 
 @Composable
-fun DashboardScreen(onNavigateToEvents: () -> Unit) {
+fun DashboardScreen(onNavigateToEvents: () -> Unit, onNavigateToSettings: () -> Unit) {
     var systemState by remember { mutableStateOf<SafeToneState>(SafeToneState.LISTENING) }
     val colorScheme = MaterialTheme.colorScheme
 
@@ -62,13 +64,13 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "SAFETONE MENU",
+                    text = stringResource(R.string.menu_title),
                     modifier = Modifier.padding(16.dp),
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
                 )
                 NavigationDrawerItem(
-                    label = { Text("Dashboard") },
+                    label = { Text(stringResource(R.string.nav_dashboard)) },
                     selected = true,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -76,11 +78,20 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Event Logs") },
+                    label = { Text(stringResource(R.string.nav_events)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
                         onNavigateToEvents()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_settings)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToSettings()
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
@@ -136,9 +147,19 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         val statusText = when (systemState) {
-                            is SafeToneState.ALERT -> (systemState as SafeToneState.ALERT).soundType.uppercase()
-                            SafeToneState.CALM -> "ENVIRONMENT IS QUIET"
-                            SafeToneState.LISTENING -> "LISTENING..."
+                            is SafeToneState.ALERT -> {
+                                val type = (systemState as SafeToneState.ALERT).soundType.uppercase()
+                                val resId = when (type) {
+                                    "FIRE ALARM" -> R.string.sound_fire_alarm
+                                    "DOORBELL" -> R.string.sound_doorbell
+                                    "BABY CRYING" -> R.string.sound_baby_crying
+                                    "DOG BARKING" -> R.string.sound_dog_barking
+                                    else -> R.string.sound_unknown
+                                }
+                                stringResource(resId).uppercase()
+                            }
+                            SafeToneState.CALM -> stringResource(R.string.dashboard_calm)
+                            SafeToneState.LISTENING -> stringResource(R.string.dashboard_listening)
                         }
 
                         Text(
@@ -199,7 +220,7 @@ fun DashboardScreen(onNavigateToEvents: () -> Unit) {
                     )
                 ) {
                     Text(
-                        text = "SWITCH STATE",
+                        text = stringResource(R.string.dashboard_switch),
                         color = if (systemState is SafeToneState.ALERT) Color.Red else Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -254,6 +275,6 @@ fun SoundWaveform(modifier: Modifier, color: Color, isAnimating: Boolean, static
 @Composable
 fun DashboardPreview() {
     SafeToneTheme {
-        DashboardScreen(onNavigateToEvents = { })
+        DashboardScreen(onNavigateToEvents = { }, onNavigateToSettings = { })
     }
 }

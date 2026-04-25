@@ -7,13 +7,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.safetone_demo.R
 import com.example.safetone_demo.data.local.entity.AudioEventEntity
 import com.example.safetone_demo.ui.theme.SafeToneTheme
 import com.example.safetone_demo.ui.components.SafeToneHeader
@@ -24,7 +28,8 @@ import java.util.*
 @Composable
 fun EventLogScreen(
     events: List<AudioEventEntity>,
-    onNavigateToDashboard: () -> Unit
+    onNavigateToDashboard: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -36,14 +41,14 @@ fun EventLogScreen(
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "SAFETONE MENU",
+                    text = stringResource(R.string.menu_title),
                     modifier = Modifier.padding(16.dp),
                     fontWeight = FontWeight.Black,
                     color = colorScheme.primary
                 )
                 HorizontalDivider()
                 NavigationDrawerItem(
-                    label = { Text("DASHBOARD") },
+                    label = { Text(stringResource(R.string.nav_dashboard)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -52,10 +57,19 @@ fun EventLogScreen(
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
                 NavigationDrawerItem(
-                    label = { Text("EVENT LOGS") },
+                    label = { Text(stringResource(R.string.nav_events)) },
                     selected = true,
                     onClick = {
                         scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.nav_settings)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToSettings()
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
@@ -79,7 +93,7 @@ fun EventLogScreen(
                     .padding(paddingValues)
             ) {
                 Text(
-                    text = "EVENT LOG",
+                    text = stringResource(R.string.events_title),
                     color = colorScheme.primary,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -104,6 +118,20 @@ fun EventLogScreen(
 @Composable
 fun EventCard(event: AudioEventEntity, colorScheme: ColorScheme) {
     val soundTypeUpper = event.soundType.uppercase()
+    val configuration = LocalConfiguration.current
+    val locale = configuration.locales[0]
+
+    val sdf = remember(locale) {
+        SimpleDateFormat("HH:mm", locale)
+    }
+
+    val soundNameRes = when (soundTypeUpper) {
+        "FIRE ALARM" -> R.string.sound_fire_alarm
+        "DOORBELL" -> R.string.sound_doorbell
+        "BABY CRYING" -> R.string.sound_baby_crying
+        "DOG BARKING" -> R.string.sound_dog_barking
+        else -> R.string.sound_unknown
+    }
 
     val indicatorColor = when (soundTypeUpper) {
         "FIRE ALARM", "BABY CRYING" -> colorScheme.error
@@ -126,7 +154,6 @@ fun EventCard(event: AudioEventEntity, colorScheme: ColorScheme) {
         else -> colorScheme.onSurface
     }
 
-    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
     val timeString = sdf.format(Date(event.timestamp))
 
     Card(
@@ -150,13 +177,13 @@ fun EventCard(event: AudioEventEntity, colorScheme: ColorScheme) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = event.soundType.uppercase(),
+                    text = stringResource(id = soundNameRes).uppercase(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor
                 )
                 Text(
-                    text = "Detected at $timeString • Confidence: ${(event.confidenceScore * 100).toInt()}%",
+                    text = "${stringResource(R.string.events_detected_at)} $timeString • ${stringResource(R.string.events_confidence)}: ${(event.confidenceScore * 100).toInt()}%",
                     fontSize = 12.sp,
                     color = textColor.copy(alpha = 0.7f)
                 )
@@ -179,7 +206,8 @@ fun EventLogPreview() {
     SafeToneTheme {
         EventLogScreen(
             events = previewEvents,
-            onNavigateToDashboard = { }
+            onNavigateToDashboard = { },
+            onNavigateToSettings = { }
         )
     }
 }

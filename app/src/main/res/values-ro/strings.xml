@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">SafeTone_demo</string>
+    <string name="menu_title">MENIU SAFETONE</string>
+    <string name="nav_dashboard">PANOU CONTROL</string>
+    <string name="nav_events">ISTORIC EVENIMENTE</string>
+    <string name="nav_settings">SETĂRI</string>
+
+    <string name="dashboard_listening">ASCULT...</string>
+    <string name="dashboard_alert">SUNET DETECTAT!</string>
+    <string name="dashboard_calm">MEDIUL ESTE LINIȘTIT</string>
+    <string name="dashboard_switch">SCHIMBĂ STAREA</string>
+
+    <string name="events_title">ISTORIC</string>
+    <string name="events_detected_at">Detectat la</string>
+    <string name="events_confidence">Încredere</string>
+
+    <string name="settings_title">SETĂRI</string>
+    <string name="settings_theme">Tema aplicației</string>
+    <string name="settings_language">Limbă</string>
+
+    <string name="watch_instruction">Apasă butonul fizic pentru liniște</string>
+    <string name="watch_dismiss">Apasă butonul pentru a închide</string>
+
+    <string name="sound_fire_alarm">Alarmă Incendiu</string>
+    <string name="sound_doorbell">Sonerie</string>
+    <string name="sound_baby_crying">Bebelus plângând</string>
+    <string name="sound_dog_barking">Lătrat câine</string>
+    <string name="sound_unknown">Sunet necunoscut</string>
+
+</resources>
