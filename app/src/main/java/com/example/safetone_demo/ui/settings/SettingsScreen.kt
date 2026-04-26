@@ -23,12 +23,11 @@ import com.example.safetone_demo.ui.components.SafeToneHeader
 import com.example.safetone_demo.ui.theme.SafeToneTheme
 import kotlinx.coroutines.launch
 
-
-
 @Composable
 fun SettingsScreen(
     isDarkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
+    onLanguageChange: (String) -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToEvents: () -> Unit
 ) {
@@ -159,6 +158,7 @@ fun SettingsScreen(
                                 TextButton(onClick = {
                                     val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("en")
                                     AppCompatDelegate.setApplicationLocales(appLocale)
+                                    onLanguageChange("en")
                                 }) {
                                     Text(
                                         text = "EN",
@@ -168,6 +168,7 @@ fun SettingsScreen(
                                 TextButton(onClick = {
                                     val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags("ro")
                                     AppCompatDelegate.setApplicationLocales(appLocale)
+                                    onLanguageChange("ro")
                                 }) {
                                     Text(
                                         text = "RO",
@@ -190,6 +191,7 @@ fun SettingsPreview() {
         SettingsScreen(
             isDarkTheme = false,
             onThemeChange = {},
+            onLanguageChange = {},
             onNavigateToDashboard = {},
             onNavigateToEvents = {}
         )

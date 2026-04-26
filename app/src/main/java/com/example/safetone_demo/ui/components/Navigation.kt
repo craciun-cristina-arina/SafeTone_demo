@@ -1,15 +1,19 @@
 package com.example.safetone_demo.ui.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.safetone_demo.SafeToneApp
 import com.example.safetone_demo.ui.dashboard.DashboardScreen
 import com.example.safetone_demo.ui.dashboard.DashboardViewModel
 import com.example.safetone_demo.ui.eventlog.EventLogScreen
 import com.example.safetone_demo.ui.settings.SettingsScreen
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import kotlinx.coroutines.launch
 
 @Composable
 fun SafeToneNavGraph(
@@ -18,6 +22,11 @@ fun SafeToneNavGraph(
     dashboardViewModel: DashboardViewModel
 ) {
     val navController = rememberNavController()
+
+    // DEFINIRE SCOPE ȘI REPOSITORY
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val repository = (context.applicationContext as SafeToneApp).repository
 
     NavHost(
         navController = navController,
@@ -31,11 +40,10 @@ fun SafeToneNavGraph(
             )
         }
         composable("event_log") {
-            // 1. Grab the REAL database history from the ViewModel
             val realEvents by dashboardViewModel.allEvents.collectAsState()
 
             EventLogScreen(
-                events = realEvents, // 2. Pass the real data into the screen!
+                events = realEvents,
                 onNavigateToDashboard = {
                     navController.navigate("dashboard") {
                         popUpTo("dashboard") { inclusive = true }
@@ -48,6 +56,12 @@ fun SafeToneNavGraph(
             SettingsScreen(
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange,
+                onLanguageChange = { lang ->
+                    // Acum scope și repository sunt recunoscute
+                    scope.launch {
+                        repository.updateWatchLanguage(lang)
+                    }
+                },
                 onNavigateToDashboard = {
                     navController.navigate("dashboard") {
                         popUpTo("dashboard") { inclusive = true }

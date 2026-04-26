@@ -1,4 +1,11 @@
 <resources>
-    <string name="app_name">SafeTone_Watch</string>
-    <string name="hello_world">Hello, %1$s!</string>
+    <string name="app_name">SafeTone Watch</string>
+
+    <string name="sound_fire_alarm">Fire Alarm</string>
+    <string name="sound_doorbell">Doorbell</string>
+    <string name="sound_baby_crying">Baby Crying</string>
+    <string name="sound_dog_barking">Dog Barking</string>
+    <string name="sound_unknown">Unknown Sound</string>
+
+    <string name="watch_dismiss">Press button to dismiss</string>
 </resources>

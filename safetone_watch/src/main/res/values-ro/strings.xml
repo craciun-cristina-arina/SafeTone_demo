@@ -1,0 +1,9 @@
+<resources>
+    <string name="sound_fire_alarm">Alarmă Incendiu</string>
+    <string name="sound_doorbell">Sonerie</string>
+    <string name="sound_baby_crying">Bebeluș plângând</string>
+    <string name="sound_dog_barking">Lătrat câine</string>
+    <string name="sound_unknown">Sunet necunoscut</string>
+
+    <string name="watch_dismiss">Apasă butonul pt. închidere</string>
+</resources>

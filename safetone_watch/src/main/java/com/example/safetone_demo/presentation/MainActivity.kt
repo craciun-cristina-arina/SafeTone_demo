@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.core.content.ContextCompat
 
-class MainActivity : ComponentActivity() {
+class MainActivity : androidx.appcompat.app.AppCompatActivity() {
 
     private val closeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
