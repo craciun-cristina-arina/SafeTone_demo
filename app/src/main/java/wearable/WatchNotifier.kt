@@ -43,4 +43,17 @@ class WatchNotifier(context: Context) {
             Log.e("WatchNotifier", "Sync failed", e)
         }
     }
+
+    suspend fun sendTtsUpdate(isEnabled: Boolean) {
+        try {
+            val dataRequest = com.google.android.gms.wearable.PutDataMapRequest.create("/safetone_tts").apply {
+                dataMap.putBoolean("tts_enabled", isEnabled)
+                dataMap.putLong("timestamp", System.currentTimeMillis())
+            }.asPutDataRequest().setUrgent()
+
+            dataClient.putDataItem(dataRequest).await()
+        } catch (e: Exception) {
+            android.util.Log.e("WatchNotifier", "TTS sync failed", e)
+        }
+    }
 }

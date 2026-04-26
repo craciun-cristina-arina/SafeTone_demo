@@ -26,6 +26,13 @@ class AlertReceiverService : WearableListenerService() {
                 val appLocale = LocaleListCompat.forLanguageTags(lang)
                 AppCompatDelegate.setApplicationLocales(appLocale)
             }
+            if (event.type == com.google.android.gms.wearable.DataEvent.TYPE_CHANGED && event.dataItem.uri.path == "/safetone_tts") {
+                val dataMap = com.google.android.gms.wearable.DataMapItem.fromDataItem(event.dataItem).dataMap
+                val isEnabled = dataMap.getBoolean("tts_enabled", true)
+
+                val prefs = getSharedPreferences("SafeTonePrefs", android.content.Context.MODE_PRIVATE)
+                prefs.edit().putBoolean("tts_enabled", isEnabled).apply()
+            }
         }
     }
 

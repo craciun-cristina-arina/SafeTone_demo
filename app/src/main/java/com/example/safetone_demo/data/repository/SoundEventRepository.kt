@@ -43,8 +43,11 @@ class SoundEventRepository(
         watchNotifier.sendAlertToWatch(soundType)
     }
 
-    // ADAUGĂ ACEASTĂ FUNCȚIE AICI:
     suspend fun updateWatchLanguage(lang: String) {
         watchNotifier.sendLanguageUpdate(lang)
+    }
+
+    suspend fun updateWatchTts(isEnabled: Boolean) {
+        watchNotifier.sendTtsUpdate(isEnabled)
     }
 }

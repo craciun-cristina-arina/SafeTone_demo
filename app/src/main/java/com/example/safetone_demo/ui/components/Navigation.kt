@@ -1,8 +1,12 @@
 package com.example.safetone_demo.ui.components
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -22,11 +26,14 @@ fun SafeToneNavGraph(
     dashboardViewModel: DashboardViewModel
 ) {
     val navController = rememberNavController()
-
-    // DEFINIRE SCOPE ȘI REPOSITORY
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val repository = (context.applicationContext as SafeToneApp).repository
+
+    val sharedPrefs = context.getSharedPreferences("SafeTonePrefs", Context.MODE_PRIVATE)
+    var isTtsEnabled by remember {
+        mutableStateOf(sharedPrefs.getBoolean("tts_enabled", true))
+    }
 
     NavHost(
         navController = navController,
@@ -40,7 +47,7 @@ fun SafeToneNavGraph(
             )
         }
         composable("event_log") {
-            val realEvents by dashboardViewModel.allEvents.collectAsState()
+            val realEvents by dashboardViewModel.allEvents.collectAsState(initial = emptyList())
 
             EventLogScreen(
                 events = realEvents,
@@ -56,8 +63,15 @@ fun SafeToneNavGraph(
             SettingsScreen(
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange,
+                isTtsEnabled = isTtsEnabled,
+                onTtsChange = { enabled ->
+                    isTtsEnabled = enabled
+                    sharedPrefs.edit().putBoolean("tts_enabled", enabled).apply()
+                    scope.launch {
+                        repository.updateWatchTts(enabled)
+                    }
+                },
                 onLanguageChange = { lang ->
-                    // Acum scope și repository sunt recunoscute
                     scope.launch {
                         repository.updateWatchLanguage(lang)
                     }

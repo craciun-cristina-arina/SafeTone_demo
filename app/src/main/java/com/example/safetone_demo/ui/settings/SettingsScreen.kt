@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,6 +28,8 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     isDarkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
+    isTtsEnabled: Boolean,
+    onTtsChange: (Boolean) -> Unit,
     onLanguageChange: (String) -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToEvents: () -> Unit
@@ -108,6 +111,7 @@ fun SettingsScreen(
                     colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -177,6 +181,34 @@ fun SettingsScreen(
                                 }
                             }
                         }
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.VolumeUp,
+                                    contentDescription = null,
+                                    tint = colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Text-to-Speech",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            Switch(
+                                checked = isTtsEnabled,
+                                onCheckedChange = onTtsChange
+                            )
+                        }
                     }
                 }
             }
@@ -191,6 +223,8 @@ fun SettingsPreview() {
         SettingsScreen(
             isDarkTheme = false,
             onThemeChange = {},
+            isTtsEnabled = true,
+            onTtsChange = {},
             onLanguageChange = {},
             onNavigateToDashboard = {},
             onNavigateToEvents = {}
