@@ -6,50 +6,46 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.example.safetone_demo.presentation.MainActivity
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.WearableListenerService
 
 class AlertReceiverService : WearableListenerService() {
 
+    override fun onDataChanged(dataEvents: DataEventBuffer) {
+        for (event in dataEvents) {
+            if (event.type == DataEvent.TYPE_CHANGED && event.dataItem.uri.path == "/safetone_lang") {
+                val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
+                val lang = dataMap.getString("lang") ?: "en"
+
+                val appLocale = LocaleListCompat.forLanguageTags(lang)
+                AppCompatDelegate.setApplicationLocales(appLocale)
+            }
+        }
+    }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
 
-        val messageString = String(messageEvent.data)
-
-        if (messageEvent.path == "/safetone_lang") {
-            val lang = String(messageEvent.data)
-            Log.d("SafeToneWatch", "!!! MESAJ PRIMIT: Schimbăm limba în -> $lang") // Vezi asta în Logcat?
-
-            val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags(lang)
-            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
-            return
-        }
-
         if (messageEvent.path == "/safetone_alert") {
-
             val messageString = String(messageEvent.data)
 
             if (messageString == "CANCEL_ALERT") {
-                Log.d("SafeToneWatch", "Cancel received from phone! Closing UI...")
-
-                // Add the specific package name so the security flag lets it through!
                 val intent = Intent("CLOSE_WATCH_UI").apply {
                     setPackage(packageName)
                 }
                 sendBroadcast(intent)
-
             } else {
-                Log.d("SafeToneWatch", "Alert Received: $messageString")
-
-                // 1. Vibrate safely across all Android versions
                 triggerAlertVibration()
-
-                // 2. Launch UI and pack the data! (Rewritten to fix putExtra)
-                val intent = Intent(this, MainActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                intent.putExtra("ALERT_TYPE", messageString)
-
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    putExtra("ALERT_TYPE", messageString)
+                }
                 startActivity(intent)
             }
         }
@@ -66,13 +62,12 @@ class AlertReceiverService : WearableListenerService() {
 
         val pattern = longArrayOf(0, 500, 200, 500, 200, 500)
 
-        // THE FIX: We must check for API 26 (Android O) to support your API 25 minimum!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val effect = VibrationEffect.createWaveform(pattern, -1)
             vibrator.vibrate(effect)
         } else {
             @Suppress("DEPRECATION")
-            vibrator.vibrate(pattern, -1) // Uses the old vibration method for older watches
+            vibrator.vibrate(pattern, -1)
         }
     }
 }
